@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --danger: #ef4444;
+      --dark: #1f2937;
+      --light: #f3f4f6;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      overflow: hidden;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--white);
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 5px;
+      animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .login-form, .todo-app {
+      display: none;
+    }
+
+    .login-form.active, .todo-app.active {
+      display: block;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid var(--light);
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .task-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .task-input-group input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid var(--light);
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    .btn-add {
+      padding: 12px 24px;
+      background: var(--success);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-add:hover {
+      background: #059669;
+      transform: scale(1.05);
+    }
+
+    .task-list {
+      list-style: none;
+    }
+
+    .task-item {
+      background: var(--light);
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: taskSlide 0.3s ease-out;
+      transition: all 0.3s ease;
+    }
+
+    @keyframes taskSlide {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .task-item:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .task-item.completed {
+      opacity: 0.6;
+    }
+
+    .task-item.completed .task-text {
+      text-decoration: line-through;
+    }
+
+    .task-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .task-info {
+      flex: 1;
+    }
+
+    .task-text {
+      color: var(--dark);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .task-date {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .btn-delete {
+      background: var(--danger);
+      color: var(--white);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+      background: #dc2626;
+      transform: scale(1.05);
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 10px;
+      color: var(--white);
+      font-weight: 600;
+      animation: notifSlide 0.3s ease-out;
+      z-index: 1000;
+    }
+
+    @keyframes notifSlide {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .notification.success {
+      background: var(--success);
+    }
+
+    .notification.error {
+      background: var(--danger);
+    }
+
+    .user-info {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: var(--light);
+      border-radius: 10px;
+    }
+
+    .logout-btn {
+      margin-top: 10px;
+      padding: 8px 20px;
+      background: var(--danger);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✓ My To-Do List</h1>
+      <p>Stay organized and productive</p>
+    </div>
+
+    <div class="content">
+      <div class="login-form active" id="loginForm">
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="Enter your email">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        <button class="btn btn-primary" onclick="login()">Login</button>
+      </div>
+
+      <div class="todo-app" id="todoApp">
+        <div class="user-info">
+          <p>Logged in as: <strong id="userEmail"></strong></p>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="task-input-group">
+          <input type="text" id="taskInput" placeholder="Add a new task...">
+          <button class="btn-add" onclick="addTask()">+ Add</button>
+        </div>
+
+        <ul class="task-list" id="taskList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+
+    function showNotification(message, type) {
+      const notif = document.createElement('div');
+      notif.className = `notification ${type}`;
+      notif.textContent = message;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 3000);
+    }
+
+    function formatDate(date) {
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}-${month}-${year}`;
+    }
+
+    function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showNotification('Please fill all fields', 'error');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            currentUser = result.email;
+            document.getElementById('userEmail').textContent = currentUser;
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('todoApp').classList.add('active');
+            loadTasks();
+            showNotification('Login successful!', 'success');
+          } else {
+            showNotification('Invalid credentials', 'error');
+          }
+        })
+        .authenticateUser(email, password);
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('loginForm').classList.add('active');
+      document.getElementById('todoApp').classList.remove('active');
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+      showNotification('Logged out successfully', 'success');
+    }
+
+    function loadTasks() {
+      google.script.run
+        .withSuccessHandler(function(tasks) {
+          const taskList = document.getElementById('taskList');
+          taskList.innerHTML = '';
+          tasks.forEach(task => renderTask(task));
+        })
+        .getTasks(currentUser);
+    }
+
+    function addTask() {
+      const taskInput = document.getElementById('taskInput');
+      const taskText = taskInput.value.trim();
+
+      if (!taskText) {
+        showNotification('Please enter a task', 'error');
+        return;
+      }
+
+      const date = formatDate(new Date());
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            renderTask({ id: result.id, task: taskText, date: date, status: 'active' });
+            taskInput.value = '';
+            showNotification('Task added!', 'success');
+          }
+        })
+        .addTask(currentUser, taskText, date);
+    }
+
+    function renderTask(task) {
+      const taskList = document.getElementById('taskList');
+      const li = document.createElement('li');
+      li.className = `task-item ${task.status === 'completed' ? 'completed' : ''}`;
+      li.innerHTML = `
+        <div class="task-content">
+          <input type="checkbox" class="checkbox" ${task.status === 'completed' ? 'checked' : ''} 
+                 onchange="toggleTask('${task.id}', this.checked)">
+          <div class="task-info">
+            <div class="task-text">${task.task}</div>
+            <div class="task-date">${task.date}</div>
+          </div>
+        </div>
+        <button class="btn-delete" onclick="deleteTask('${task.id}', this.parentElement)">Delete</button>
+      `;
+      taskList.appendChild(li);
+    }
+
+    function toggleTask(id, checked) {
+      const status = checked ? 'completed' : 'active';
+      google.script.run
+        .withSuccessHandler(function() {
+          showNotification('Task updated!', 'success');
+        })
+        .updateTaskStatus(id, status);
+    }
+
+    function deleteTask(id, element) {
+      element.style.animation = 'taskSlide 0.3s ease-out reverse';
+      setTimeout(() => {
+        google.script.run
+          .withSuccessHandler(function() {
+            element.remove();
+            showNotification('Task deleted!', 'success');
+          })
+          .deleteTask(id);
+      }, 300);
+    }
+
+    document.getElementById('taskInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') addTask();
+    });
+
+    document.getElementById('password').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') login();
+    });
+  </script>
+</body>
+</html>
