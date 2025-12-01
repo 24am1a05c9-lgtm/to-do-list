@@ -74,11 +74,11 @@
       padding: 30px;
     }
 
-    .login-form, .todo-app {
+    .login-form, .register-form, .todo-app {
       display: none;
     }
 
-    .login-form.active, .todo-app.active {
+    .login-form.active, .register-form.active, .todo-app.active {
       display: block;
     }
 
@@ -127,6 +127,23 @@
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .switch-text {
+      text-align: center;
+      margin-top: 15px;
+      color: #6b7280;
+    }
+
+    .switch-link {
+      color: var(--primary);
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .switch-link:hover {
+      color: var(--secondary);
     }
 
     .task-input-group {
@@ -301,18 +318,43 @@
     </div>
 
     <div class="content">
+      <!-- Login Form -->
       <div class="login-form active" id="loginForm">
         <div class="input-group">
           <label>Email</label>
-          <input type="email" id="email" placeholder="Enter your email">
+          <input type="email" id="loginEmail" placeholder="Enter your email">
         </div>
         <div class="input-group">
           <label>Password</label>
-          <input type="password" id="password" placeholder="Enter your password">
+          <input type="password" id="loginPassword" placeholder="Enter your password">
         </div>
         <button class="btn btn-primary" onclick="login()">Login</button>
+        <div class="switch-text">
+          Don't have an account? <span class="switch-link" onclick="showRegister()">Sign Up</span>
+        </div>
       </div>
 
+      <!-- Registration Form -->
+      <div class="register-form" id="registerForm">
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="Enter your email">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="Create a password">
+        </div>
+        <div class="input-group">
+          <label>Confirm Password</label>
+          <input type="password" id="regConfirmPassword" placeholder="Confirm your password">
+        </div>
+        <button class="btn btn-primary" onclick="register()">Create Account</button>
+        <div class="switch-text">
+          Already have an account? <span class="switch-link" onclick="showLogin()">Login</span>
+        </div>
+      </div>
+
+      <!-- To-Do App -->
       <div class="todo-app" id="todoApp">
         <div class="user-info">
           <p>Logged in as: <strong id="userEmail"></strong></p>
@@ -340,6 +382,51 @@
       setTimeout(() => notif.remove(), 3000);
     }
 
+    function showLogin() {
+      document.getElementById('registerForm').classList.remove('active');
+      document.getElementById('loginForm').classList.add('active');
+    }
+
+    function showRegister() {
+      document.getElementById('loginForm').classList.remove('active');
+      document.getElementById('registerForm').classList.add('active');
+    }
+
+    function register() {
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+      if (!email || !password || !confirmPassword) {
+        showNotification('Please fill all fields', 'error');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+      }
+
+      if (password.length < 6) {
+        showNotification('Password must be at least 6 characters', 'error');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showNotification(result.message, 'success');
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regConfirmPassword').value = '';
+            setTimeout(() => showLogin(), 1500);
+          } else {
+            showNotification(result.message, 'error');
+          }
+        })
+        .registerUser(email, password);
+    }
+
     function formatDate(date) {
       const d = new Date(date);
       const day = String(d.getDate()).padStart(2, '0');
@@ -349,8 +436,8 @@
     }
 
     function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
 
       if (!email || !password) {
         showNotification('Please fill all fields', 'error');
@@ -367,7 +454,7 @@
             loadTasks();
             showNotification('Login successful!', 'success');
           } else {
-            showNotification('Invalid credentials', 'error');
+            showNotification(result.message, 'error');
           }
         })
         .authenticateUser(email, password);
@@ -377,8 +464,8 @@
       currentUser = null;
       document.getElementById('loginForm').classList.add('active');
       document.getElementById('todoApp').classList.remove('active');
-      document.getElementById('email').value = '';
-      document.getElementById('password').value = '';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
       showNotification('Logged out successfully', 'success');
     }
 
@@ -457,8 +544,12 @@
       if (e.key === 'Enter') addTask();
     });
 
-    document.getElementById('password').addEventListener('keypress', function(e) {
+    document.getElementById('loginPassword').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') login();
+    });
+
+    document.getElementById('regConfirmPassword').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') register();
     });
   </script>
 </body>
